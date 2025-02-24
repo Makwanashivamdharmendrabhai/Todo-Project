@@ -10,10 +10,10 @@ createRoot(document.getElementById("root")).render(
       {/* login and signup route */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/home" element={<Home />} />
 
       {/* user routes */}
       <Route path="/" element={<App />}>
-        <Route path="home" element={<Home />} />
         <Route path="user" element={<User />} />
         <Route path="user/complete" element={<Complete />} />
       </Route>

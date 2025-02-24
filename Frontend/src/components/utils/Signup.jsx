@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function SignUp() {
   const {
@@ -11,6 +13,7 @@ function SignUp() {
   } = useForm();
 
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
@@ -19,8 +22,18 @@ function SignUp() {
   const signup = async (data) => {
     console.log("Form Data:", data);
     try {
-      const response = await axios.post("http://localhost:3000/user/signup", data);
-      console.log("Success:", response.data);
+      const result = await axios.post(
+        "http://localhost:3000/user/signup",
+        data,
+        {
+          withCredentials: true,
+        }
+      );
+      if (result.status == 200) {
+        navigate("/user");
+      } else {
+        console.log(result.data.err);
+      }
     } catch (error) {
       console.error("Error:", error);
     }
@@ -94,7 +107,8 @@ function SignUp() {
                 {...register("password", {
                   required: "Password is required!",
                   pattern: {
-                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[a-zA-Z\d@$!%*?&]{8,}$/,
+                    value:
+                      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[a-zA-Z\d@$!%*?&]{8,}$/,
                     message:
                       "Password must be at least 8 characters long, including uppercase letters, numbers, and special characters.",
                   },
@@ -126,10 +140,13 @@ function SignUp() {
           </button>
         </form>
         <p className="text-center text-gray-600 mt-4">
-          Already have an account?{" "}
-          <a href="#" className="text-blue-500 hover:underline">
+          Already have an account?
+          <Link
+            to="http://localhost:5173/login"
+            className="text-blue-500 hover:underline"
+          >
             Log in
-          </a>
+          </Link>
         </p>
       </div>
     </div>

@@ -4,10 +4,7 @@ import jwt from "jsonwebtoken";
 export async function getEncryptedPassword(password) {
   try {
     const saltRound = parseInt(process.env.SALT_ROUND);
-    const encryptedPassword = await bcrypt.hash(
-      password,
-      saltRound
-    );
+    const encryptedPassword = await bcrypt.hash(password, saltRound);
     return encryptedPassword;
   } catch (error) {
     console.log("error while getting encrypted password " + error.message);
@@ -25,10 +22,10 @@ export async function comparePassword(password, encryptedPassword) {
   }
 }
 
-export async function sendToken(id, email) {
+export function sendToken(id, email) {
   try {
-    const token = await jwt.sign({ id, email }, process.env.SECRET_KEY, {
-      expiresIn: process.env.EXPIRESIN,
+    const token = jwt.sign({ id, email }, process.env.SECRET_KEY, {
+      expiresIn: process.env.EXPIRES_IN,
     });
     return token;
   } catch (error) {
@@ -41,14 +38,14 @@ export async function verifyToken(req, res, next) {
   try {
     const token = req.cookies.token;
     if (!token) {
-      console.log("token not found");
-      return false;
+      return res.status(401).send({ message: "Token not found please Login" });
     }
-    const decoded = await json.verify(token, process.env.SECRET_KEY);
-    console.log(decoded);
+
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    req.id = decoded.id;
+    req.email = decoded.email;
     next();
   } catch (error) {
-    console.log("user authentication failed");
-    return;
+    return res.status(401).send({ error: "Invalid token. Please log in again." });
   }
 }

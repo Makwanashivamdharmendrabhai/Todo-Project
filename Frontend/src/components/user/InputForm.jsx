@@ -2,7 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 
-function InputForm() {
+function InputForm({ setFlag, selectedOption, setTodos }) {
   const {
     register,
     handleSubmit,
@@ -15,9 +15,26 @@ function InputForm() {
     try {
       const result = await axios.post(
         "http://localhost:3000/user/todo/new",
-        data
+        data,
+        {
+          withCredentials: true,
+        }
       );
-      console.log(result.data);
+      if (selectedOption) {
+        try {
+          const result = await axios.get(
+            `http://localhost:3000/user/todo/sort/${selectedOption}`,
+            {
+              withCredentials: true,
+            }
+          );
+          setTodos(result.data.data);
+        } catch (error) {
+          console.log("error while fetching sorted todos : " + error);
+        }
+      } else {
+        setFlag((prev) => !prev);
+      }
       if (result.status == 201) {
         reset();
       } else {
@@ -29,10 +46,12 @@ function InputForm() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-gray-100 min-h-screen">
+    <div className="flex flex-col items-center justify-center py-4">
+      {" "}
+      {/* Reduced padding */}
       <form
         onSubmit={handleSubmit(add)}
-        className="bg-white p-6 shadow-lg rounded-lg w-full max-w-md"
+        className="bg-white p-4 shadow-lg rounded-lg w-full max-w-md"
       >
         {/* Input and Button in same row */}
         <div className="flex items-center space-x-2">
@@ -64,7 +83,7 @@ function InputForm() {
           <input
             type="range"
             id="priority"
-            {...register("priority")} // Registering with React Hook Form
+            {...register("priority")}
             min="1"
             max="5"
             defaultValue="3"
