@@ -42,6 +42,7 @@ import {
   verifyToken,
 } from "./auth/auth.js";
 
+import sendMail from "./helper/mail.js";
 // imporing models
 import { User, Todo } from "./models/index.js";
 
@@ -265,6 +266,20 @@ app.get("/user/todo/complete", verifyToken, async (req, res) => {
     }
   } catch (error) {
     console.log("errore while fetching completed todos:", error);
+  }
+});
+
+app.get("/sendMail", async (req, res) => {
+  const to = "vipuljamod122@gmail.com";
+  const subject = "Test Email";
+  const text = "Hi, this is a test email from Shivam.";
+
+  const success = await sendMail(to, subject, text);
+
+  if (success) {
+    res.send("✅ Email sent successfully!");
+  } else {
+    res.status(500).send("❌ Error sending email.");
   }
 });
 
