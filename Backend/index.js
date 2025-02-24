@@ -193,6 +193,33 @@ app.get("/user/todo/sort/:order", verifyToken, async (req, res) => {
   }
 });
 
+app.get("/user/todo/filter/:date", verifyToken, async (req, res) => {
+  try {
+    const selectedDate = req.params.date; // User-selected date
+    console.log("Selected date: " + selectedDate);
+    if (!selectedDate) {
+      res.status(404).send("enter valid date");
+      return;
+    }
+    const startOfDay = new Date(selectedDate);
+    const endOfDay = new Date(selectedDate);
+    endOfDay.setHours(23, 59, 59, 999); // Set to the end of the day
+
+    // Mongoose query
+    const results = await Todo.find({
+      author: req.id,
+      createdAt: {
+        $gte: startOfDay, // Start of the selected date
+        $lt: endOfDay, // End of the selected date
+      },
+    });
+    res.send(results);
+  } catch (error) {
+    console.error("Filter error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 app.put("/user/todo/:todoId", verifyToken, async function (req, res) {
   try {
     const todo = await Todo.findById(req.params.todoId);

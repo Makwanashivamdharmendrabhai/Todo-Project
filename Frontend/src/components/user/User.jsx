@@ -8,6 +8,7 @@ function User() {
   const [flag, setFlag] = useState(false);
   const [todos, setTodos] = useState([]);
   const [selectedOption, setSelectedOption] = useState("");
+  const [date, setDate] = useState("");
 
   const handleSelect = async (option) => {
     if (selectedOption === option) {
@@ -26,6 +27,22 @@ function User() {
       } catch (error) {
         console.log("error while fetching sorted todos : " + error);
       }
+    }
+  };
+
+  const handleDateChange = async (e) => {
+    const date = e.target.value;
+    if (date) {
+      setDate(date);
+      const res = await axios.get(
+        `http://localhost:3000/user/todo/filter/${date}`,
+        {
+          withCredentials: true,
+        }
+      );
+      setTodos(res.data);
+    }else{
+      setDate("");
     }
   };
 
@@ -88,6 +105,19 @@ function User() {
               Sort Desc
             </span>
           </label>
+        </div>
+
+        <div className="p-4">
+          <label className="block text-lg font-medium mb-2">
+            Select a Date:
+          </label>
+          <input
+            type="date"
+            value={date}
+            onChange={handleDateChange}
+            className="border rounded-lg p-2 w-full"
+          />
+          {date && <p className="mt-2 text-gray-700">Selected Date: {date}</p>}
         </div>
       </header>
 
