@@ -45,6 +45,7 @@ import {
 import sendMail from "./helper/mail.js";
 // imporing models
 import { User, Todo } from "./models/index.js";
+import generatePassword from "./helper/genPass.js";
 
 app.listen(port, () => {
   console.log("listening on port " + port);
@@ -64,7 +65,7 @@ app.post("/user/signup", async (req, res) => {
       .then((data) => {
         const token = sendToken(data._id, data.email);
         res.cookie("token", token, {
-          httpOnly: true,
+          // httpOnly: true,
           maxAge: 24 * 60 * 60 * 1000, // 1 day
           sameSite: "lax", // Allows cookies in cross-origin requests with navigation
         });
@@ -91,7 +92,7 @@ app.post("/user/signin", async (req, res) => {
         const token = sendToken(dbUser._id, userData.email);
         // sending cookie
         res.cookie("token", token, {
-          httpOnly: true,
+          // httpOnly: true,
           maxAge: 24 * 60 * 60 * 1000, // 1 day
           sameSite: "lax", // Allows cookies in cross-origin requests with navigation
         });
@@ -269,10 +270,12 @@ app.get("/user/todo/complete", verifyToken, async (req, res) => {
   }
 });
 
+
 app.get("/sendMail", async (req, res) => {
   const to = "vipuljamod122@gmail.com";
   const subject = "Test Email";
-  const text = "Hi, this is a test email from Shivam.";
+  const password = generatePassword();
+  const text = `this is the password for you ${password}`;
 
   const success = await sendMail(to, subject, text);
 
