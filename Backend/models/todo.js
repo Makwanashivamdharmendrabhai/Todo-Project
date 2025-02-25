@@ -1,6 +1,12 @@
-import { compare } from "bcrypt";
 import mongoose from "mongoose";
 const { Schema } = mongoose;
+
+// Helper function to get the current time in IST
+const getISTTime = () => {
+  const now = new Date();
+  const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC +5:30
+  return new Date(now.getTime() + istOffset);
+};
 
 const todoSchema = new Schema({
   text: {
@@ -11,23 +17,23 @@ const todoSchema = new Schema({
     type: Number,
     min: 1,
     max: 5,
-    defalut: 5,
+    default: 5, // Fix typo from "defalut"
   },
   isCompleted: {
     type: Boolean,
     default: false,
   },
-  isDeleted:{
+  isDeleted: {
     type: Boolean,
     default: false,
   },
   completedAt: {
     type: Date,
-    default: Date.now,
+    default: getISTTime, // Stores IST time by default
   },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: getISTTime, // Stores IST time by default
   },
   author: {
     type: Schema.Types.ObjectId,
@@ -35,5 +41,5 @@ const todoSchema = new Schema({
   },
 });
 
-const Todo = new mongoose.model("Todo", todoSchema);
+const Todo = mongoose.model("Todo", todoSchema);
 export default Todo;

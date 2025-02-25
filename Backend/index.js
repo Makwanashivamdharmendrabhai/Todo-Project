@@ -120,7 +120,11 @@ app.post("/user/logout", verifyToken, async (req, res) => {
 app.post("/user/todo/new", verifyToken, async (req, res) => {
   try {
     const todoData = req.body;
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC +5:30
+    const istDate = new Date(now.getTime() + istOffset);
 
+    todoData.createdAt = istDate;
     // Fetching user ID from the verified token
     const userId = req.id;
     todoData.author = userId;
@@ -206,6 +210,7 @@ app.get("/user/todo/filter/:date", verifyToken, async (req, res) => {
       res.status(404).send("enter valid date");
       return;
     }
+
     const startOfDay = new Date(selectedDate);
     const endOfDay = new Date(selectedDate);
     endOfDay.setHours(23, 59, 59, 999); // Set to the end of the day
@@ -220,7 +225,10 @@ app.get("/user/todo/filter/:date", verifyToken, async (req, res) => {
         $lt: endOfDay, // End of the selected date
       },
     });
-    res.status(200).send({message:"todos fetched successfully",data:results});
+    console.log(results);
+    res
+      .status(200)
+      .send({ message: "todos fetched successfully", data: results });
   } catch (error) {
     console.error("Filter error:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -241,9 +249,9 @@ app.get(
         res.status(404).send("enter valid date");
         return;
       }
-      const startOfDay = new Date(selectedDate);
-      const endOfDay = new Date(selectedDate);
-      endOfDay.setHours(23, 59, 59, 999); // Set to the end of the day
+
+      const startOfDay = new Date(`${selectedDate}T00:00:00.000Z`);
+      const endOfDay = new Date(`${selectedDate}T23:59:59.999Z`);
 
       // Mongoose query
       const results = await Todo.find({
@@ -262,7 +270,9 @@ app.get(
       }
 
       console.log("results: " + results);
-      res.status(200).send({message:"todos fetched successfully",data:results});
+      res
+        .status(200)
+        .send({ message: "todos fetched successfully", data: results });
     } catch (error) {
       console.error("Filter error:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -273,8 +283,12 @@ app.get(
 app.put("/user/todo/:todoId", verifyToken, async function (req, res) {
   try {
     const todo = await Todo.findById(req.params.todoId);
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC +5:30
+    const istDate = new Date(now.getTime() + istOffset);
     todo.isCompleted = true;
-    todo.completedAt = Date.now();
+
+    todo.completedAt = istDate;
     await todo.save();
     return res.status(200).send({ message: "todo marked as completed" });
   } catch (error) {

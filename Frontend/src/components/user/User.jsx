@@ -15,7 +15,7 @@ function User() {
 
   const handleSelect = async (option) => {
     if (selectedOption === option) {
-      setSelectedOption(""); 
+      setSelectedOption("");
       url = date ? `http://localhost:3000/user/todo/filter/${date}` : null;
     } else {
       url = date
@@ -28,9 +28,10 @@ function User() {
       const result = await axios.get(url, {
         withCredentials: true,
       });
-      setTodos(result.data.data)
+      setTodos(result.data.data);
     } else {
       setFlag((prev) => !prev);
+      return;
     }
   };
 
@@ -41,11 +42,11 @@ function User() {
         url = `http://localhost:3000/user/todo/filter/${date}/sort/${selectedOption}`;
       else url = `http://localhost:3000/user/todo/filter/${date}`;
       setDate(date);
-      const res = await axios.get(url, {
+      const result = await axios.get(url, {
         withCredentials: true,
       });
-      console.log("result of filter on sort" + res);
-      setTodos(res.data.data);
+      console.log("result of filter on sort" + result.data.data);
+      setTodos(result.data.data);
     } else {
       setDate("");
     }
@@ -141,7 +142,13 @@ function User() {
 
         {/* Todo List - Full Width */}
         <div className="w-full max-w-2xl">
-          <Todo todos={todos} setFlag={setFlag} />
+          <Todo
+            todos={todos}
+            setFlag={setFlag}
+            selectedOption={selectedOption}
+            setTodos={setTodos}
+            date={date}
+          />
         </div>
       </div>
     </>

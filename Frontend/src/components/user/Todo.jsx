@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-function Todo({ todos, setFlag }) {
+function Todo({ todos, setFlag, selectedOption, setTodos, date }) {
   async function handleCheckChange(todo) {
     const todoId = todo._id;
     const result = await axios.put(
@@ -11,8 +11,26 @@ function Todo({ todos, setFlag }) {
         withCredentials: true,
       }
     );
+    let url = "";
     if (result.status === 200) {
-      setFlag((prev) => !prev);
+      if (selectedOption) {
+        if (date) {
+          url = `http://localhost:3000/user/todo/filter/${date}/sort/${selectedOption}`;
+        } else {
+          url = `http://localhost:3000/user/todo/sort/${selectedOption}`;
+        }
+      } else {
+        if (date) {
+          url = `http://localhost:3000/user/todo/filter/${date}`;
+        } else {
+          setFlag((prev) => !prev);
+          return;
+        }
+      }
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      setTodos(res.data.data);
     }
   }
 
@@ -24,8 +42,26 @@ function Todo({ todos, setFlag }) {
         withCredentials: true,
       }
     );
+    let url = "";
     if (result.status === 200) {
-      setFlag((prev) => !prev);
+      if (selectedOption) {
+        if (date) {
+          url = `http://localhost:3000/user/todo/filter/${date}/sort/${selectedOption}`;
+        } else {
+          url = `http://localhost:3000/user/todo/sort/${selectedOption}`;
+        }
+      } else {
+        if (date) {
+          url = `http://localhost:3000/user/todo/filter/${date}`;
+        } else {
+          setFlag((prev) => !prev);
+          return;
+        }
+      }
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      setTodos(res.data.data);
     }
   }
   return (
