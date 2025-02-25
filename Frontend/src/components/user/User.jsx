@@ -3,12 +3,14 @@ import axios from "axios";
 import InputForm from "./InputForm";
 import Todo from "./Todo";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 function User() {
   const [flag, setFlag] = useState(false);
   const [todos, setTodos] = useState([]);
   const [selectedOption, setSelectedOption] = useState("");
   const [date, setDate] = useState("");
+  const authStatus = useSelector((state) => state.auth.status);
 
   const handleSelect = async (option) => {
     if (selectedOption === option) {
@@ -58,6 +60,7 @@ function User() {
       }
     }
     fetchTodos();
+    console.log(authStatus)
   }, [flag]);
 
   return (
@@ -72,7 +75,6 @@ function User() {
             Show Completed Todos
           </Link>
         </div>
-
         <div className="flex gap-4 mt-6">
           <label className="flex items-center gap-2 cursor-pointer">
             <input

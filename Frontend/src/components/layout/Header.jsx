@@ -1,8 +1,11 @@
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logout } from "../../../store/authSlice";
 
 function Header() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const handleAuth = async () => {
     const result = await axios.post(
       "http://localhost:3000/user/logout",
@@ -12,6 +15,7 @@ function Header() {
       }
     );
     if (result.status === 200) {
+      dispatch(logout())
       navigate("/home");
     }
   };

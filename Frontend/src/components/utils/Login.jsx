@@ -4,6 +4,8 @@ import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { login } from "../../../store/authSlice";
 
 function Login() {
   const {
@@ -15,6 +17,7 @@ function Login() {
   const [check, setCheck] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
@@ -25,7 +28,6 @@ function Login() {
   };
 
   const signin = async (data) => {
-    console.log("Form Data:", data);
     try {
       const response = await axios.post(
         "http://localhost:3000/user/signin",
@@ -35,6 +37,7 @@ function Login() {
         }
       );
       if (response.status === 200) {
+        dispatch(login())
         navigate("/user")
       } else {
         console.log(response.data.message);

@@ -4,6 +4,8 @@ import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { login } from "../../../store/authSlice";
 
 function SignUp() {
   const {
@@ -11,16 +13,15 @@ function SignUp() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm();
-
+  
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
   };
 
   const signup = async (data) => {
-    console.log("Form Data:", data);
     try {
       const result = await axios.post(
         "http://localhost:3000/user/signup",
@@ -30,6 +31,7 @@ function SignUp() {
         }
       );
       if (result.status == 200) {
+        dispatch(login());
         navigate("/user");
       } else {
         console.log(result.data.err);
@@ -38,7 +40,6 @@ function SignUp() {
       console.error("Error:", error);
     }
   };
-
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-96">
