@@ -49,6 +49,8 @@ function User() {
       setTodos(result.data.data);
     } else {
       setDate("");
+      setFlag((prev) => !prev);
+      return;
     }
   };
 

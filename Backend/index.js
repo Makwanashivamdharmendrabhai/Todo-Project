@@ -59,6 +59,12 @@ app.get("/", (req, res) => {
 app.post("/user/signup", async (req, res) => {
   try {
     const userData = req.body;
+    const email = req.body.email;
+    const dbUser = await User.findOne({ email: email });
+    if (dbUser) {
+      res.status(500).send({ message: "email is already registered" });
+      return;
+    }
     userData.password = await getEncryptedPassword(userData.password);
     const user = new User(userData);
     user
