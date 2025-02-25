@@ -10,40 +10,43 @@ function User() {
   const [todos, setTodos] = useState([]);
   const [selectedOption, setSelectedOption] = useState("");
   const [date, setDate] = useState("");
+  let url = "";
   const authStatus = useSelector((state) => state.auth.status);
 
   const handleSelect = async (option) => {
     if (selectedOption === option) {
-      setSelectedOption(""); // Reset selection
-      setFlag((prev) => !prev); // Trigger useEffect to fetch default data
+      setSelectedOption(""); 
+      url = date ? `http://localhost:3000/user/todo/filter/${date}` : null;
     } else {
-      try {
-        const result = await axios.get(
-          `http://localhost:3000/user/todo/sort/${option}`,
-          {
-            withCredentials: true,
-          }
-        );
-        setTodos(result.data.data);
-        setSelectedOption(option);
-      } catch (error) {
-        console.log("error while fetching sorted todos : " + error);
-      }
+      url = date
+        ? `http://localhost:3000/user/todo/filter/${date}/sort/${option}`
+        : `http://localhost:3000/user/todo/sort/${option}`;
+
+      setSelectedOption(option);
+    }
+    if (url) {
+      const result = await axios.get(url, {
+        withCredentials: true,
+      });
+      setTodos(result.data.data)
+    } else {
+      setFlag((prev) => !prev);
     }
   };
 
   const handleDateChange = async (e) => {
     const date = e.target.value;
     if (date) {
+      if (selectedOption)
+        url = `http://localhost:3000/user/todo/filter/${date}/sort/${selectedOption}`;
+      else url = `http://localhost:3000/user/todo/filter/${date}`;
       setDate(date);
-      const res = await axios.get(
-        `http://localhost:3000/user/todo/filter/${date}`,
-        {
-          withCredentials: true,
-        }
-      );
-      setTodos(res.data);
-    }else{
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      console.log("result of filter on sort" + res);
+      setTodos(res.data.data);
+    } else {
       setDate("");
     }
   };
@@ -60,7 +63,7 @@ function User() {
       }
     }
     fetchTodos();
-    console.log(authStatus)
+    console.log(authStatus);
   }, [flag]);
 
   return (

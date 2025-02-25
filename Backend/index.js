@@ -55,6 +55,7 @@ app.get("/", (req, res) => {
   res.send("root here!");
 });
 
+// user routes
 app.post("/user/signup", async (req, res) => {
   try {
     const userData = req.body;
@@ -114,6 +115,8 @@ app.post("/user/logout", verifyToken, async (req, res) => {
   res.clearCookie("token");
   res.status(200).send({ message: "user logged out succesfully" });
 });
+
+// todo routes
 app.post("/user/todo/new", verifyToken, async (req, res) => {
   try {
     const todoData = req.body;
@@ -210,17 +213,62 @@ app.get("/user/todo/filter/:date", verifyToken, async (req, res) => {
     // Mongoose query
     const results = await Todo.find({
       author: req.id,
+      isCompleted: false,
+      isDeleted: false,
       createdAt: {
         $gte: startOfDay, // Start of the selected date
         $lt: endOfDay, // End of the selected date
       },
     });
-    res.send(results);
+    res.status(200).send({message:"todos fetched successfully",data:results});
   } catch (error) {
     console.error("Filter error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+app.get(
+  "/user/todo/filter/:date/sort/:order",
+  verifyToken,
+  async function (req, res) {
+    try {
+      const selectedDate = req.params.date; // User-selected date
+      let order = req.params.order;
+      if (order === "asc") order = 1;
+      else order = -1;
+
+      if (!selectedDate) {
+        res.status(404).send("enter valid date");
+        return;
+      }
+      const startOfDay = new Date(selectedDate);
+      const endOfDay = new Date(selectedDate);
+      endOfDay.setHours(23, 59, 59, 999); // Set to the end of the day
+
+      // Mongoose query
+      const results = await Todo.find({
+        author: req.id,
+        isCompleted: false,
+        isDeleted: false,
+        createdAt: {
+          $gte: startOfDay, // Start of the selected date
+          $lt: endOfDay, // End of the selected date
+        },
+      }).sort({ priority: order });
+
+      if (results.length == 0) {
+        res.send("no todos found");
+        return;
+      }
+
+      console.log("results: " + results);
+      res.status(200).send({message:"todos fetched successfully",data:results});
+    } catch (error) {
+      console.error("Filter error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
 
 app.put("/user/todo/:todoId", verifyToken, async function (req, res) {
   try {
@@ -270,17 +318,17 @@ app.get("/user/todo/complete", verifyToken, async (req, res) => {
   }
 });
 
+// sending mail
 app.post("/sendMail", async (req, res) => {
   const email = req.body.email;
-  const dbUser = await User.findOne({ email:email });
+  const dbUser = await User.findOne({ email: email });
   console.log(dbUser);
-  if(dbUser){
+  if (dbUser) {
     const to = email;
     const subject = "Forgot Password";
     const password = generatePassword();
-
     const text = ` ${password} is the new password for you`;
-  
+
     // adding new password to db
     const encryptedPassword = await getEncryptedPassword(password);
     dbUser.password = encryptedPassword;
@@ -289,15 +337,13 @@ app.post("/sendMail", async (req, res) => {
     const success = await sendMail(to, subject, text);
 
     if (success) {
-      res.status(200).send({message:"email sent successfully"});
+      res.status(200).send({ message: "email sent successfully" });
     } else {
-      res.status(500).send({message:" Error sending email."});
+      res.status(500).send({ message: " Error sending email." });
     }
+  } else {
+    res.status(404).send({ message: "User is not Registered." });
   }
-  else{
-    res.status(404).send({message:"User is not Registered."});
-  }
-
 });
 
 app.get("*", (req, res) => {
