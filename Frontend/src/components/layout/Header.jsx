@@ -16,7 +16,7 @@ function Header() {
     );
     if (result.status === 200) {
       dispatch(logout())
-      navigate("/home");
+      navigate("/");
     }
   };
 

@@ -32,7 +32,7 @@ function SignUp() {
       );
       if (result.status == 200) {
         dispatch(login());
-        navigate("/user");
+        navigate("/user/dashboard");
       } else {
         console.log(result.data.err);
       }

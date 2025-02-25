@@ -25,7 +25,7 @@ function Complete() {
         {/* Back Button at Extreme Left */}
         <div>
           <Link
-            to="/user"
+            to="/user/dashboard"
             className="text-sm flex items-center bg-gray-600 text-white px-2 py-1 rounded-md shadow hover:bg-gray-500 transition"
           >
             ⬅️ Back

@@ -270,20 +270,34 @@ app.get("/user/todo/complete", verifyToken, async (req, res) => {
   }
 });
 
+app.post("/sendMail", async (req, res) => {
+  const email = req.body.email;
+  const dbUser = await User.findOne({ email:email });
+  console.log(dbUser);
+  if(dbUser){
+    const to = email;
+    const subject = "Forgot Password";
+    const password = generatePassword();
 
-app.get("/sendMail", async (req, res) => {
-  const to = "vipuljamod122@gmail.com";
-  const subject = "Test Email";
-  const password = generatePassword();
-  const text = `this is the password for you ${password}`;
+    const text = ` ${password} is the new password for you`;
+  
+    // adding new password to db
+    const encryptedPassword = await getEncryptedPassword(password);
+    dbUser.password = encryptedPassword;
+    await dbUser.save();
 
-  const success = await sendMail(to, subject, text);
+    const success = await sendMail(to, subject, text);
 
-  if (success) {
-    res.send("✅ Email sent successfully!");
-  } else {
-    res.status(500).send("❌ Error sending email.");
+    if (success) {
+      res.status(200).send({message:"email sent successfully"});
+    } else {
+      res.status(500).send({message:" Error sending email."});
+    }
   }
+  else{
+    res.status(404).send({message:"User is not Registered."});
+  }
+
 });
 
 app.get("*", (req, res) => {
