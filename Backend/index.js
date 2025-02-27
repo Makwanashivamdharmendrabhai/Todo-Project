@@ -125,36 +125,26 @@ app.post("/user/logout", verifyToken, async (req, res) => {
 // todo routes
 app.post("/user/todo/new", verifyToken, async (req, res) => {
   try {
-    const todoData = req.body;
-    const now = new Date();
-    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC +5:30
-    const istDate = new Date(now.getTime() + istOffset);
-
-    todoData.createdAt = istDate;
-    // Fetching user ID from the verified token
-    const userId = req.id;
-    todoData.author = userId;
-
-    // Fetching the user by ID
-    const user = await User.findById(userId);
-
+    let todoData = req.body;
+    todoData.author = req.id; 
+    
+    // Fetch user
+    const user = await User.findById(req.id);
     if (!user) {
       return res.status(404).send({ message: "User not found" });
     }
-
-    // Creating a new todo
+    
     const todo = new Todo(todoData);
-    const savedTodo = await todo.save(); // Save todo first
-
+    const savedTodo = await todo.save();
     // Add todo ID to the user's todos array
     user.todos.push(savedTodo._id);
-    await user.save(); // Save the updated user
+    await user.save();
 
     res
       .status(201)
-      .send({ message: "Successfully saved to database", data: savedTodo });
+      .send({ message: "Todo successfully added", data: savedTodo });
   } catch (error) {
-    console.error("Error while adding todo to database:", error);
+    console.error("Error while adding todo:", error);
     res.status(500).send({ message: "Internal server error" });
   }
 });
@@ -208,33 +198,42 @@ app.get("/user/todo/sort/:order", verifyToken, async (req, res) => {
   }
 });
 
+import moment from "moment-timezone";
+
 app.get("/user/todo/filter/:date", verifyToken, async (req, res) => {
   try {
-    const selectedDate = req.params.date; // User-selected date
-    console.log("Selected date: " + selectedDate);
+    const selectedDate = req.params.date;
+    console.log("Selected date (IST):", selectedDate);
+
     if (!selectedDate) {
-      res.status(404).send("enter valid date");
-      return;
+      return res.status(400).send({ message: "Enter a valid date" });
     }
 
-    const startOfDay = new Date(selectedDate);
-    const endOfDay = new Date(selectedDate);
-    endOfDay.setHours(23, 59, 59, 999); // Set to the end of the day
+    // Convert the selected IST date to the UTC range
+    const startOfDayUTC = moment
+      .tz(selectedDate, "Asia/Kolkata")
+      .startOf("day")
+      .utc()
+      .toDate();
+    const endOfDayUTC = moment
+      .tz(selectedDate, "Asia/Kolkata")
+      .endOf("day")
+      .utc()
+      .toDate();
 
-    // Mongoose query
+    console.log("Querying from:", startOfDayUTC, "to", endOfDayUTC);
+
+    // Fetch todos within the UTC range
     const results = await Todo.find({
       author: req.id,
       isCompleted: false,
       isDeleted: false,
-      createdAt: {
-        $gte: startOfDay, // Start of the selected date
-        $lt: endOfDay, // End of the selected date
-      },
-    });
-    console.log(results);
+      createdAt: { $gte: startOfDayUTC, $lt: endOfDayUTC },
+    }).sort({ createdAt: -1 });
+
     res
       .status(200)
-      .send({ message: "todos fetched successfully", data: results });
+      .send({ message: "Todos fetched successfully", data: results });
   } catch (error) {
     console.error("Filter error:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -246,39 +245,45 @@ app.get(
   verifyToken,
   async function (req, res) {
     try {
-      const selectedDate = req.params.date; // User-selected date
+      const selectedDate = req.params.date;
       let order = req.params.order;
-      if (order === "asc") order = 1;
-      else order = -1;
+
+      order = order === "asc" ? 1 : -1;
 
       if (!selectedDate) {
-        res.status(404).send("enter valid date");
-        return;
+        return res.status(400).send({ message: "Enter a valid date" });
       }
 
-      const startOfDay = new Date(`${selectedDate}T00:00:00.000Z`);
-      const endOfDay = new Date(`${selectedDate}T23:59:59.999Z`);
+      const startOfDayUTC = moment
+        .tz(selectedDate, "Asia/Kolkata")
+        .startOf("day")
+        .utc()
+        .toDate();
+      const endOfDayUTC = moment
+        .tz(selectedDate, "Asia/Kolkata")
+        .endOf("day")
+        .utc()
+        .toDate();
 
-      // Mongoose query
+      console.log(
+        `Querying from ${startOfDayUTC} to ${endOfDayUTC}, Order: ${order}`
+      );
+
+      // Mongoose query to filter by date and sort by priority
       const results = await Todo.find({
         author: req.id,
         isCompleted: false,
         isDeleted: false,
-        createdAt: {
-          $gte: startOfDay, // Start of the selected date
-          $lt: endOfDay, // End of the selected date
-        },
+        createdAt: { $gte: startOfDayUTC, $lt: endOfDayUTC },
       }).sort({ priority: order });
 
-      if (results.length == 0) {
-        res.send("no todos found");
-        return;
+      if (results.length === 0) {
+        return res.status(200).send({ message: "No todos found", data: [] });
       }
 
-      console.log("results: " + results);
       res
         .status(200)
-        .send({ message: "todos fetched successfully", data: results });
+        .send({ message: "Todos fetched successfully", data: results });
     } catch (error) {
       console.error("Filter error:", error);
       res.status(500).json({ message: "Internal server error" });

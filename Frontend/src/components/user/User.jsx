@@ -42,16 +42,20 @@ function User() {
         url = `http://localhost:3000/user/todo/filter/${date}/sort/${selectedOption}`;
       else url = `http://localhost:3000/user/todo/filter/${date}`;
       setDate(date);
-      const result = await axios.get(url, {
-        withCredentials: true,
-      });
-      console.log("result of filter on sort" + result.data.data);
-      setTodos(result.data.data);
     } else {
+      if (selectedOption)
+        url = `http://localhost:3000/user/todo/sort/${selectedOption}`;
+      else {
+        setFlag((prev)=>!prev);
+        return;
+      };
       setDate("");
-      setFlag((prev) => !prev);
-      return;
     }
+    const result = await axios.get(url, {
+      withCredentials: true,
+    });
+    console.log("result of filter on sort" + result.data.data);
+    setTodos(result.data.data);
   };
 
   useEffect(() => {
