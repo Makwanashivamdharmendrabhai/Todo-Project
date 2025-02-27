@@ -27,10 +27,10 @@ function Login() {
     setCheck((prev) => !prev);
   };
 
-  const signin = async (data) => {
+  const login = async (data) => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/user/signin",
+        "http://localhost:3000/user/login",
         data,
         {
           withCredentials: true,
@@ -53,7 +53,7 @@ function Login() {
         <h2 className="text-2xl font-semibold text-center text-gray-700 mb-4">
           Log In
         </h2>
-        <form onSubmit={handleSubmit(signin)} className="space-y-4">
+        <form onSubmit={handleSubmit(login)} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-gray-600 font-medium">
               Email

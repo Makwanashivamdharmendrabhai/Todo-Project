@@ -86,7 +86,7 @@ app.post("/user/signup", async (req, res) => {
   }
 });
 
-app.post("/user/signin", async (req, res) => {
+app.post("/user/login", async (req, res) => {
   const userData = req.body;
   try {
     // verifying user data with database
@@ -122,18 +122,28 @@ app.post("/user/logout", verifyToken, async (req, res) => {
   res.status(200).send({ message: "user logged out succesfully" });
 });
 
+app.delete("/user/delete", verifyToken, async (req, res) => {
+  try {
+    const result = await Todo.deleteMany({ author: req.id });
+    const user = await User.findByIdAndDelete(req.id);
+    res.status(200).send({message:"user deleted successfully"});
+  } catch (error) {
+    console.log("error while deleting user", error);
+  }
+});
+
 // todo routes
 app.post("/user/todo/new", verifyToken, async (req, res) => {
   try {
     let todoData = req.body;
-    todoData.author = req.id; 
-    
+    todoData.author = req.id;
+
     // Fetch user
     const user = await User.findById(req.id);
     if (!user) {
       return res.status(404).send({ message: "User not found" });
     }
-    
+
     const todo = new Todo(todoData);
     const savedTodo = await todo.save();
     // Add todo ID to the user's todos array
